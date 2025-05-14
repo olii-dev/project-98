@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project 98 - Horror Game</title>
+  <link rel="icon" href="images/project-98-logo.png" type="image/x-icon" />
+  <style>
+    /* Windows 98 style colors and fonts */
+    @import url('https://fonts.googleapis.com/css2?family=MS+Sans+Serif&display=swap');
+
+    body {
+      margin: 0;
+      background: #000000;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 12px;
+      color: black;
+      user-select: none;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Canvas for animated noise */
+    #noiseCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.15;
+      mix-blend-mode: screen; /* subtle lightening effect */
+      image-rendering: pixelated; /* crisp noise */
+    }
+
+    .window {
+      width: 600px;
+      margin: 40px auto;
+      background: #c0c0c0;
+      border: 2px solid white;
+      box-shadow:
+        inset 1px 1px white,
+        inset -1px -1px #404040;
+      position: relative;
+      z-index: 2;
+    }
+
+    .title-bar {
+      background: #000080;
+      color: white;
+      padding: 2px 8px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+
+    .title-bar .title {
+      font-size: 14px;
+    }
+
+    .title-bar .buttons {
+      display: flex;
+      gap: 4px;
+    }
+
+    .title-bar button {
+      width: 16px;
+      height: 14px;
+      padding: 0;
+      border: 2px solid white;
+      background: #c0c0c0;
+      box-shadow:
+        inset 1px 1px white,
+        inset -1px -1px #404040;
+      cursor: pointer;
+      font-weight: bold;
+      color: black;
+      line-height: 12px;
+      text-align: center;
+    }
+
+    .title-bar button:active {
+      border-style: inset;
+      box-shadow: none;
+    }
+
+    .content {
+      background: #ffffff;
+      padding: 12px;
+      border: 2px solid #808080;
+      box-shadow:
+        inset 1px 1px white,
+        inset -1px -1px #404040;
+    }
+
+    h1 {
+      font-size: 18px;
+      margin-top: 0;
+      margin-bottom: 8px;
+      color: #000080;
+    }
+
+    p {
+      margin-top: 0;
+      margin-bottom: 12px;
+    }
+
+    .button {
+      background: #c0c0c0;
+      border: 2px solid white;
+      box-shadow:
+        inset 1px 1px white,
+        inset -1px -1px #404040;
+      padding: 4px 12px;
+      font-weight: bold;
+      cursor: pointer;
+      color: black;
+      user-select: none;
+    }
+
+    .button:active {
+      border-style: inset;
+      box-shadow: none;
+    }
+
+    .footer {
+      font-size: 10px;
+      color: #404040;
+      text-align: center;
+      margin-top: 16px;
+      user-select: none;
+    }
+
+    /* Scrollbar styling to match Windows 98 */
+    ::-webkit-scrollbar {
+      width: 16px;
+      height: 16px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #c0c0c0;
+      box-shadow:
+        inset 1px 1px white,
+        inset -1px -1px #404040;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #000080;
+      border: 2px solid white;
+      box-shadow:
+        inset 1px 1px white,
+        inset -1px -1px #404040;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="noiseCanvas"></canvas>
+
+  <br /><br />
+  <h1 style="text-align: center; font-size: 36px; color: white;">Project 98</h1>
+  <div class="window">
+    <div class="title-bar">
+      <div class="title">Project 98</div>
+      <div class="buttons">
+        <button title="Minimize">_</button>
+        <button title="Maximize">▢</button>
+        <button title="Close" onclick="alert('F4TAL 3RROR, THERE 1S N0 ESC4PE')">×</button>
+      </div>
+    </div>
+    <div class="content">
+      <h1>Welcome to Project 98</h1>
+      <p><strong>Project 98</strong> was a scrapped dreamscape progression game. This was the first and last game to ever feature user data and hard drive access. </p>
+      <h2>What is Project 98?</h2>
+      <p>There is not much known about Project 98, but here's the information we managed to get:</p>
+      <ul>
+        <li>It was developed for Windows 98.</li>
+        <li>The game was still in early beta.</li>
+        <li>The game was last updated on 21/01/1998.</li>
+        <li>The original creator of the game is Scott Mawly, who went missing on 20/02/1998.</li>
+      </ul>
+      <button class="button" onclick="alert('Download coming soon!')">Download</button>
+      <button class="button" onclick="alert('More info coming soon!')">More Info</button>
+    </div>
+  </div>
+  <div class="footer">
+    © 2025 Project 98. All rights reserved.
+  </div>
+
+  <script>
+    const canvas = document.getElementById('noiseCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    function generateNoise() {
+      const imageData = ctx.createImageData(canvas.width, canvas.height);
+      const buffer = new Uint32Array(imageData.data.buffer);
+      for (let i = 0; i < buffer.length; i++) {
+        // Random grayscale noise pixel with alpha
+        const shade = Math.random() * 255 | 0;
+        buffer[i] = (255 << 24) | (shade << 16) | (shade << 8) | shade;
+      }
+      ctx.putImageData(imageData, 0, 0);
+    }
+
+    function loop() {
+      generateNoise();
+      requestAnimationFrame(loop);
+    }
+
+    loop();
+  </script>
+</body>
+</html>
