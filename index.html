@@ -152,6 +152,32 @@
         inset 1px 1px white,
         inset -1px -1px #404040;
     }
+
+    /* BSOD styling */
+    .bsod {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #0000AA;
+      color: white;
+      font-family: 'Courier New', monospace;
+      padding: 50px;
+      box-sizing: border-box;
+      z-index: 9999;
+    }
+
+    .bsod h1 {
+      color: white;
+      font-size: 24px;
+      margin-bottom: 30px;
+    }
+
+    .bsod p {
+      margin: 10px 0;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
@@ -165,12 +191,12 @@
       <div class="buttons">
         <button title="Minimize">_</button>
         <button title="Maximize">▢</button>
-        <button title="Close" onclick="alert('F4TAL 3RROR, THERE 1S N0 ESC4PE')">×</button>
+        <button title="Close" onclick="showBSOD()">×</button>
       </div>
     </div>
     <div class="content">
       <h1>Welcome to Project 98</h1>
-      <p><strong>Project 98</strong> was a scrapped dreamscape progression game. This was the first and last game to ever feature user data and hard drive access. </p>
+      <p><strong>Project 98</strong> was a scrapped dreamscape progression game. This was the first and last game to ever feature user data and hard drive access. </p>
       <h2>What is Project 98?</h2>
       <p>There is not much known about Project 98, but here's the information we managed to get:</p>
       <ul>
@@ -179,8 +205,8 @@
         <li>The game was last updated on 21/01/1998.</li>
         <li>The original creator of the game is Scott Mawly, who went missing on 20/02/1998.</li>
       </ul>
-      <button class="button" onclick="alert('Download coming soon!')">Download</button>
-      <button class="button" onclick="alert('More info coming soon!')">More Info</button>
+      <button class="button" onclick="showBSOD()">Download</button>
+      <button class="button" onclick="showBSOD()">More Info</button>
     </div>
   </div>
   <div class="footer">
@@ -215,6 +241,205 @@
     }
 
     loop();
+
+    // Blue Screen of Death function
+// Update the showBSOD function to remove the random messages
+function showBSOD() {
+  // Create BSOD overlay
+  const bsod = document.createElement('div');
+  bsod.className = 'bsod';
+  
+  // BSOD content with better error message
+  bsod.innerHTML = `
+    <h1>Windows 98</h1>
+    <p>A fatal exception SCOTT_MAWLY has occurred at 0028:C0011E36.</p>
+    <p>* The system has detected unauthorised access to USER data.</p>
+    <p>* Process PROJECT98 caused a memory violation in multiple modules.</p>
+    <p>* Error code: .. / .- -- / -.-. --- -- .. -. --. / ..-. --- .-. / -.-- --- ..- .-.-.-</p>
+    <p style="margin-top: 20px">The current application will be terminated.</p>
+    <p style="margin-top: 30px">* Type "reboot" to restart your computer.</p>
+    <p>* All unsaved information in all applications will be lost.</p>
+    <p style="margin-top: 20px">* Type "download project98" to download Project 98 on reboot.</p>
+    <div style="margin-top: 40px">
+      <span style="font-weight: bold">C:\\WINDOWS></span>
+      <input type="text" id="rebootInput" style="background: #0000AA; color: white; border: none; font-family: 'Courier New', monospace; font-size: 16px; outline: none; caret-color: white; width: 200px;">
+    </div>
+  `;
+  
+  // Add BSOD to the page
+  document.body.appendChild(bsod);
+  
+  // Play error sound
+  const bsodSound = new Audio('data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAZGF0YRAAAAAAAAAAAAAAAAAAAAAAAA==');
+  bsodSound.play().catch(e => console.log('Audio playback error:', e));
+  
+  // Focus the input field
+  setTimeout(() => {
+    const input = document.getElementById('rebootInput');
+    if (input) input.focus();
+  }, 100);
+  
+// Update the reboot command handler in the showBSOD function
+document.getElementById('rebootInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    const command = this.value.trim().toLowerCase();
+    if (command === 'reboot') {
+      showRebootScreen();
+    } else if (command === 'help') {
+      // Easter egg - responding to "help" command
+      const helpText = document.createElement('p');
+      helpText.textContent = 'NO HELP AVAILABLE. SYSTEM COMPROMISED.';
+      helpText.style.color = '#FF0000';
+      this.parentNode.appendChild(helpText);
+    } else if (command === 'download project98') {
+      // Easter egg - downloading the file
+      const downloadText = document.createElement('p');
+      downloadText.textContent = 'INITIATING DOWNLOAD...';
+      this.parentNode.appendChild(downloadText);
+      
+      // Simulate download progress
+      setTimeout(() => {
+        downloadText.textContent = 'DOWNLOADING PROJECT98 [■□□□□□□□□□] 10%';
+        setTimeout(() => {
+          downloadText.textContent = 'DOWNLOADING PROJECT98 [■■■□□□□□□□] 30%';
+          setTimeout(() => {
+            downloadText.textContent = 'D0WNLOAD1NG PR0JECT98 [■■■■■□□□□□] 5O%';
+            setTimeout(() => {
+              downloadText.textContent = 'DOWNLOADING PROJECT98 [■■■■■■■□□□] 70%';
+              setTimeout(() => {
+                downloadText.textContent = 'DOWNLOADING PROJECT98 [■■■■■■■■■□] 90%';
+                setTimeout(() => {
+                  downloadText.textContent = 'DOWNLOAD COMPLETE. EXECUTING PROJECT98...';
+                  
+                  // Create and trigger file download
+                  setTimeout(() => {
+                    const fileContent = `WARNING: This file is part of PROJECT 98.
+DREAMSCAPE: ${new Date().toISOString()}
+USER: ${navigator.userAgent}
+LOCATION: Coordinates encrypted
+
+Scott Mawly was here.
+He is watching.
+Help me.`;
+                    
+                    const blob = new Blob([fileContent], {type: 'text/plain'});
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'PROJECT98-ERROR-LOGS.txt';
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    // Show executed message
+                    downloadText.textContent = 'PROJECT98 COULD NOT DOWNLOAD. CHECK YOUR DOWNLOADS FOR ERROR LOG.';
+                    downloadText.style.color = '#FF0000';
+                  }, 1000);
+                }, 500);
+              }, 500);
+            }, 500);
+          }, 500); 
+        }, 500);
+      }, 500);
+    } else {
+      // Show error for invalid commands
+      const errorText = document.createElement('p');
+      errorText.textContent = `Bad command or file name: ${this.value}`;
+      this.parentNode.appendChild(errorText);
+    }
+    this.value = '';
+  }
+});
+}
+
+// Function to show reboot screen with flickering removed
+function showRebootScreen() {
+  // Remove BSOD
+  document.querySelectorAll('.bsod').forEach(el => el.remove());
+  
+  // Create reboot screen
+  const rebootScreen = document.createElement('div');
+  rebootScreen.className = 'bsod';
+  rebootScreen.style.display = 'flex';
+  rebootScreen.style.flexDirection = 'column';
+  rebootScreen.style.justifyContent = 'center';
+  rebootScreen.style.alignItems = 'center';
+  rebootScreen.style.textAlign = 'center';
+  
+  rebootScreen.innerHTML = `
+    <h1>SYSTEM REBOOT</h1>
+    <p style="margin-bottom: 40px">WINDOWS 98 IS SHUTTING DOWN...</p>
+    <div class="progress-container" style="width: 400px; height: 30px; border: 2px solid white; margin-bottom: 20px; position: relative;">
+      <div id="progress-bar" style="width: 0%; height: 100%; background-color: white; transition: width 0.2s;"></div>
+    </div>
+    <p id="status-text">Preparing to reboot...</p>
+    <p style="color: #0000AA; font-size: 2px; margin-top: 50px;">he's coming for you next</p>
+  `;
+  
+  document.body.appendChild(rebootScreen);
+  
+  // Simulate reboot process
+  let progress = 0;
+  const progressBar = document.getElementById('progress-bar');
+  const statusText = document.getElementById('status-text');
+  
+  const statusMessages = [
+    'Shutting down system processes...',
+    'Saving system state...',
+    'Clearing memory...',
+    'Disconnecting from network...',
+    'ACCESSING USER FILES...',
+    'CORRUPTING DATA...',
+    'EXTRACTING USER INFORMATION...',
+    'Preparing to restart...'
+  ];
+  
+  const progressInterval = setInterval(() => {
+    progress += Math.random() * 5;
+    
+    if (progress >= 100) {
+      progress = 100;
+      clearInterval(progressInterval);
+      
+      // After progress completes, wait briefly then reload or redirect
+      setTimeout(() => {
+        if (Math.random() < 0.1) {
+          // 10% chance to show a creepy message before reload
+          rebootScreen.innerHTML = `
+            <h1 style="color: #FF0000;">DREAMSCAPE INITIATED</h1>
+            <p style="font-size: 24px; margin-top: 40px;">HE HAS FOUND YOU</p>
+          `;
+          setTimeout(() => {
+            window.location.reload();
+          }, 3000);
+        } else {
+          window.location.reload();
+        }
+      }, 1500);
+    }
+    
+    // Update progress bar
+    progressBar.style.width = progress + '%';
+    
+    // Randomly update status message
+    if (Math.random() < 0.2) {
+      const messageIndex = Math.min(
+        Math.floor(progress / (100 / statusMessages.length)),
+        statusMessages.length - 1
+      );
+      statusText.textContent = statusMessages[messageIndex];
+      
+      // Make some messages red and scary
+      if (messageIndex > 3) {
+        statusText.style.color = '#FF0000';
+      } else {
+        statusText.style.color = '#FFFFFF';
+      }
+    }
+  }, 200);
+}
   </script>
 </body>
 </html>
