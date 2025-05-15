@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>i know who you are...</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cellipse cx='50' cy='50' rx='45' ry='30' fill='%23000' stroke='%230f0' stroke-width='3'/%3E%3Ccircle cx='50' cy='50' r='15' fill='%230f0'/%3E%3Ccircle cx='50' cy='50' r='5' fill='%23000'/%3E%3C/svg%3E">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
+        
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background: #000;
+            overflow: hidden;
+        }
+        
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        
+        #message {
+            position: relative;
+            color: #0f0;
+            font-size: 2.8rem;
+            font-family: 'Share Tech Mono', 'VT323', monospace;
+            text-shadow: 0 0 8px #0f0;
+            letter-spacing: 0.1em;
+            user-select: none;
+            z-index: 10;
+            line-height: 1.5;
+            text-align: center;
+            max-width: 80vw;
+        }
+        
+        /* Subtle text glitch animations */
+        @keyframes subtleGlitch {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(-1px, 0.5px); }
+            50% { transform: translate(0.8px, -0.7px); }
+            75% { transform: translate(-0.6px, 0.3px); }
+            100% { transform: translate(0, 0); }
+        }
+        
+        /* Terminal cursor effect */
+        #message::after {
+            content: "_";
+            animation: blink 1.5s step-end infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        /* Individual letter animations */
+        .letter {
+            display: inline-block;
+            animation: subtleGlitch 3s infinite;
+            animation-timing-function: steps(2);
+            animation-delay: calc(var(--delay) * 0.3s);
+        }
+        
+        /* CRT scan line effect */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(18, 16, 16, 0) 50%,
+                rgba(0, 255, 0, 0.03) 50%
+            );
+            background-size: 100% 2px;
+            pointer-events: none;
+            z-index: 2;
+            animation: scanline 15s linear infinite;
+            opacity: 0.5;
+        }
+        
+        @keyframes scanline {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100vh; }
+        }
+        
+        /* Creepy image styling - more subtle but disturbing */
+        #creepy-image {
+            position: fixed;
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            display: none;
+            z-index: 100;
+            filter: grayscale(1) contrast(1.2) brightness(0.7);
+            opacity: 100;
+            transition: opacity 0.8s ease-in;
+            pointer-events: none;
+            mix-blend-mode: difference;
+        }
+        
+        /* Watched feeling effect */
+        .eye {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cellipse cx='50' cy='50' rx='45' ry='30' fill='%23000' stroke='%23555' stroke-width='2'/%3E%3Ccircle cx='50' cy='50' r='15' fill='%23222'/%3E%3Ccircle cx='50' cy='50' r='5' fill='%23555'/%3E%3C/svg%3E");
+            opacity: 0.1;
+            z-index: 50;
+            pointer-events: none;
+            transition: opacity 5s;
+        }
+        
+    /* Whisper text that appears and disappears */
+    .whisper {
+        position: fixed;
+        color: rgba(255, 255, 255, 0.3); /* Increased visibility */
+        font-size: 1.2rem; /* Slightly larger */
+        font-family: 'Share Tech Mono', monospace;
+        opacity: 0;
+        transition: opacity 1s;
+        z-index: 30;
+        pointer-events: none;
+        text-align: center;
+        max-width: 200px;
+        text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+    }
+    </style>
+</head>
+<body>
+    <div id="message"></div>
+    <img id="creepy-image" src="images/creepy.png" alt="watching">
+    <audio id="ambient-audio" src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA" preload="auto" loop></audio>
+    <audio id="machine-whirring" src="audio/machine-whirring.mp3" preload="auto" loop></audio>
+    
+    <script>
+    const message = document.getElementById('message');
+    const creepyImage = document.getElementById('creepy-image');
+    const ambientAudio = document.getElementById('ambient-audio');
+    const machineWhirring = document.getElementById('machine-whirring');
+    
+    // Set volumes
+    ambientAudio.volume = 0.1;
+    machineWhirring.volume = 0.15; // Set an appropriate volume level for the whirring
+
+    const fullMessage = `hello, i have been watching you
+
+    i know your location
+    you left your microphone on
+    i hear you breathing
+    i know when you are alone
+    i know your secrets and fears
+
+    i am closer than you think`;
+
+    // Typing speed in milliseconds per character
+    const typingSpeed = 100;
+
+    // Function to type the message with line breaks
+    async function typeMessage(text) {
+        message.innerHTML = ''; // Clear existing content
+        for (let i = 0; i < text.length; i++) {
+            let char = text[i];
+            if (char === '\n') {
+                message.appendChild(document.createElement('br'));
+            } else if (char === ' ') {
+                message.appendChild(document.createTextNode(' '));
+            } else {
+                const span = document.createElement('span');
+                span.textContent = char;
+                span.className = 'letter';
+                // Optional: add subtle glitch animation delay
+                span.style.setProperty('--delay', Math.random() * 10);
+                message.appendChild(span);
+            }
+            await new Promise(resolve => setTimeout(resolve, typingSpeed));
+        }
+    }
+
+    // Disturbing whispers to appear on screen
+    const disturbingWhispers = [
+        "i see you",
+        "don't turn around",
+        "check your windows",
+        "your camera is on",
+        "i'm in your network",
+        "check your doors",
+        "did you hear that?",
+        "i've been here before",
+        "your data is mine",
+        "they're watching you too",
+        "you should cover your webcam",
+        "your password was easy",
+        "i found your files",
+        "i know where you live",
+        "your backups are gone",
+        "i'm always watching",
+        "behind you",
+        "look over your shoulder",
+        "i'm in your system"
+    ];
+
+    // Create subtle watching eyes in the background
+    function createEyes() {
+        for (let i = 0; i < 15; i++) {
+            const eye = document.createElement('div');
+            eye.className = 'eye';
+            const size = 20 + Math.random() * 60;
+            eye.style.width = `${size}px`;
+            eye.style.height = `${size}px`;
+            eye.style.left = Math.random() * window.innerWidth + 'px';
+            eye.style.top = Math.random() * window.innerHeight + 'px';
+            document.body.appendChild(eye);
+            
+            // Randomly make some eyes more visible
+            setTimeout(() => {
+                eye.style.opacity = 0.05 + Math.random() * 0.15;
+            }, Math.random() * 30000 + 5000);
+        }
+    }
+
+    // Create whispers that fade in and out
+    function createWhisper() {
+        const whisper = document.createElement('div');
+        whisper.className = 'whisper';
+        whisper.textContent = disturbingWhispers[Math.floor(Math.random() * disturbingWhispers.length)];
+        
+        // Position more visibly in the viewport
+        whisper.style.left = (Math.random() * 60 + 20) + '%'; // 20-80% of screen width
+        whisper.style.top = (Math.random() * 60 + 20) + '%';  // 20-80% of screen height
+        
+        document.body.appendChild(whisper);
+        
+        // Force layout recalculation before transition
+        window.getComputedStyle(whisper).opacity;
+        
+        // Fade in - with slight delay to ensure transition works
+        setTimeout(() => {
+            whisper.style.opacity = '1';
+            
+            // Fade out and remove after some time
+            setTimeout(() => {
+                whisper.style.opacity = '0';
+                setTimeout(() => {
+                    if (whisper.parentNode) {
+                        whisper.parentNode.removeChild(whisper);
+                    }
+                }, 1000); // Wait for fade-out transition to complete
+            }, Math.random() * 4000 + 3000); // Stay visible for 3-7 seconds
+        }, 50);
+        
+        // Create next whisper after a shorter time
+        setTimeout(createWhisper, Math.random() * 5000 + 3000); // New whisper every 3-8 seconds
+    }
+
+    // Occasionally show the watching symbol
+    function showWatchingSymbol() {
+        // Don't show if already visible
+        if (creepyImage.style.opacity > 0.1) {
+            setTimeout(showWatchingSymbol, Math.random() * 15000 + 10000);
+            return;
+        }
+        
+        // Position near an edge of the screen
+        const edgePosition = Math.random();
+        let posX, posY;
+        
+        if (edgePosition < 0.25) {
+            // Left edge
+            posX = Math.random() * 100;
+            posY = Math.random() * window.innerHeight;
+        } else if (edgePosition < 0.5) {
+            // Right edge
+            posX = window.innerWidth - Math.random() * 100 - 150;
+            posY = Math.random() * window.innerHeight;
+        } else if (edgePosition < 0.75) {
+            // Top edge
+            posX = Math.random() * window.innerWidth;
+            posY = Math.random() * 100;
+        } else {
+            // Bottom edge
+            posX = Math.random() * window.innerWidth;
+            posY = window.innerHeight - Math.random() * 100 - 150;
+        }
+        
+        creepyImage.style.left = `${posX}px`;
+        creepyImage.style.top = `${posY}px`;
+        
+        // Size varies
+        const size = 100 + Math.random() * 100;
+        creepyImage.style.width = `${size}px`;
+        creepyImage.style.height = `${size}px`;
+        
+        // Show with slow fade in
+        creepyImage.style.display = 'block';
+        creepyImage.style.opacity = '0';
+        
+        setTimeout(() => {
+            creepyImage.style.opacity = '0.3';
+            
+            // Hide after a while (longer display time - more unsettling)
+            setTimeout(() => {
+                creepyImage.style.opacity = '0';
+                setTimeout(() => {
+                    creepyImage.style.display = 'none';
+                }, 800);
+            }, Math.random() * 8000 + 4000);
+        }, 100);
+        
+        // Schedule next appearance
+        setTimeout(showWatchingSymbol, Math.random() * 20000 + 15000);
+    }
+
+    // Subtle effects that make you feel like someone's watching
+    function creepyAtmosphereEffects() {
+        // Random cursor movement (just a pixel or two)
+        if (Math.random() < 0.01) {
+            const event = new MouseEvent('mousemove', {
+                clientX: Math.random() * window.innerWidth,
+                clientY: Math.random() * window.innerHeight
+            });
+            document.dispatchEvent(event);
+        }
+        
+        // Very occasionally change a letter's color
+        const letters = document.querySelectorAll('.letter');
+        if (letters.length > 0 && Math.random() < 0.05) {
+            const randomLetter = letters[Math.floor(Math.random() * letters.length)];
+            const originalColor = randomLetter.style.color;
+            randomLetter.style.color = '#ff0000';
+            
+            setTimeout(() => {
+                randomLetter.style.color = originalColor;
+            }, 300);
+        }
+        
+        setTimeout(creepyAtmosphereEffects, 500);
+    }
+
+window.onload = () => {
+    // Start playing audio immediately on page load
+    ambientAudio.play().catch(() => {});
+    machineWhirring.play().catch(() => {});
+
+    // Start typing the message
+    typeMessage(fullMessage).then(() => {
+        createEyes();
+
+        // Show the microphone notification after a short delay
+        setTimeout(showMicrophoneNotification, 2000);
+
+        // Start showing the watching symbol after a delay
+        setTimeout(showWatchingSymbol, 8000);
+
+        // Start creating whispers after some time
+        setTimeout(createWhisper, 3000);
+
+        // Start subtle atmosphere effects
+        setTimeout(creepyAtmosphereEffects, 5000);
+
+        // Unlock audio playback on first user interaction
+        const unlockAudio = () => {
+            ambientAudio.play().catch(() => {});
+            machineWhirring.play().catch(() => {});
+            window.removeEventListener('click', unlockAudio);
+            window.removeEventListener('keydown', unlockAudio);
+        };
+        window.addEventListener('click', unlockAudio);
+        window.addEventListener('keydown', unlockAudio);
+
+        // Track cursor with subtle delay - makes you feel followed
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        // Subtle following of cursor by the message
+        function followCursor() {
+            const x = mouseX / window.innerWidth - 0.5;
+            const y = mouseY / window.innerHeight - 0.5;
+            message.style.transform = `translate(${x * 5}px, ${y * 5}px)`;
+            requestAnimationFrame(followCursor);
+        }
+        followCursor();
+    });
+};
+
+ function showMicrophoneNotification() {
+    // Create popup container
+    const popup = document.createElement('div');
+    popup.style.position = 'fixed';
+    popup.style.top = '0';
+    popup.style.left = '0';
+    popup.style.width = '100%';
+    popup.style.height = '100%';
+    popup.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    popup.style.display = 'flex';
+    popup.style.justifyContent = 'center';
+    popup.style.alignItems = 'center';
+    popup.style.zIndex = '1000';
+    popup.style.opacity = '0';
+    popup.style.transition = 'opacity 0.5s ease-in-out';
+    
+    // Create alert dialog
+    const alertBox = document.createElement('div');
+    alertBox.style.width = '400px';
+    alertBox.style.background = '#0a0a0a';
+    alertBox.style.border = '1px solid #ff3030';
+    alertBox.style.borderRadius = '2px';
+    alertBox.style.boxShadow = '0 0 20px rgba(255, 0, 0, 0.4)';
+    alertBox.style.overflow = 'hidden';
+    
+    // Create title bar
+    const titleBar = document.createElement('div');
+    titleBar.style.background = '#ff3030';
+    titleBar.style.color = 'white';
+    titleBar.style.padding = '8px 12px';
+    titleBar.style.fontFamily = 'Share Tech Mono, monospace';
+    titleBar.style.display = 'flex';
+    titleBar.style.justifyContent = 'space-between';
+    titleBar.style.alignItems = 'center';
+    titleBar.style.fontSize = '1.1rem';
+    titleBar.innerHTML = `<span>SYSTEM ALERT</span>
+<button style="background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; 
+padding: 0; line-height: 1; margin: 0; font-family: monospace;" 
+onclick="this.parentNode.parentNode.parentNode.remove()">×</button>`;
+    
+    // Create content
+    const content = document.createElement('div');
+    content.style.padding = '20px';
+    content.style.color = 'white';
+    content.style.fontFamily = 'Share Tech Mono, monospace';
+    content.style.fontSize = '1.1rem';
+    content.style.textAlign = 'center';
+    
+    // Warning icon
+    const icon = document.createElement('div');
+    icon.innerHTML = '⚠️';
+    icon.style.fontSize = '38px';
+    icon.style.marginBottom = '7px';
+    
+    // Message text
+    const text = document.createElement('div');
+    text.innerHTML = `WARNING<br><br>Your microphone has been activated remotely.<br>
+    <span style="font-size: 0.9rem; opacity: 0.8; display: block; margin-top: 10px;">
+    Audio streaming to: unknown location</span>`;
+    text.style.marginBottom = '20px';
+    
+    // Add blinking red dot
+    const recordingIndicator = document.createElement('div');
+    recordingIndicator.style.width = '12px';
+    recordingIndicator.style.height = '12px';
+    recordingIndicator.style.background = '#ff3030';
+    recordingIndicator.style.borderRadius = '50%';
+    recordingIndicator.style.margin = '0 auto 20px';
+    recordingIndicator.style.animation = 'blink 1s ease-in-out infinite';
+    
+    // Add style for blinking
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // OK button
+    const button = document.createElement('button');
+    button.innerText = 'OK';
+    button.style.background = '#333';
+    button.style.color = 'white';
+    button.style.border = '1px solid #555';
+    button.style.padding = '8px 30px';
+    button.style.fontFamily = 'Share Tech Mono, monospace';
+    button.style.cursor = 'pointer';
+    button.style.marginTop = '10px';
+    button.style.fontSize = '1rem';
+    button.onclick = function() {
+        popup.style.opacity = '0';
+        setTimeout(() => popup.remove(), 500);
+    };
+    
+    // Assemble the alert
+    content.appendChild(icon);
+    content.appendChild(text);
+    content.appendChild(recordingIndicator);
+    content.appendChild(button);
+    
+    alertBox.appendChild(titleBar);
+    alertBox.appendChild(content);
+    
+    popup.appendChild(alertBox);
+    document.body.appendChild(popup);
+    
+    // Show the alert with a slight delay
+    setTimeout(() => {
+        popup.style.opacity = '1';
+    }, 100);
+    
+    // Focus the OK button
+    setTimeout(() => {
+        button.focus();
+    }, 500);
+}
+    </script>
+</body>
+</html>
