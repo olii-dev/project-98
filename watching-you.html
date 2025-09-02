@@ -350,8 +350,18 @@ window.onload = () => {
     machineWhirring.play().catch(() => {});
 
     // Personalize the message with device info
-    const deviceInfo = navigator.userAgent;
-    const personalizedMessage = fullMessage.replace('[device_info]', `you are using: ${deviceInfo}`);
+    // Extract just the OS from the user agent string
+    function getOS() {
+        const ua = navigator.userAgent;
+        if (/windows/i.test(ua)) return 'Windows';
+        if (/macintosh|mac os x/i.test(ua)) return 'Mac OS';
+        if (/linux/i.test(ua)) return 'Linux';
+        if (/android/i.test(ua)) return 'Android';
+        if (/iphone|ipad|ipod/i.test(ua)) return 'iOS';
+        return 'an unknown OS';
+    }
+    const os = getOS();
+    const personalizedMessage = fullMessage.replace('[device_info]', `you are using: ${os}`);
 
     // Start typing the message
     typeMessage(personalizedMessage).then(() => {
