@@ -358,7 +358,6 @@ Help me.`;
     this.value = '';
   }
 });
-}
 
 // Function to show reboot screen with flickering removed
 function showRebootScreen() {
@@ -404,31 +403,16 @@ function showRebootScreen() {
   
   const progressInterval = setInterval(() => {
     progress += Math.random() * 5;
-    
     if (progress >= 100) {
       progress = 100;
       clearInterval(progressInterval);
-      
-      // After progress completes, wait briefly then reload or redirect
+      // After progress completes, show the boot menu instead of reloading
       setTimeout(() => {
-        if (Math.random() < 0.1) {
-          // 10% chance to show a creepy message before reload
-          rebootScreen.innerHTML = `
-            <h1 style="color: #FF0000;">DREAMSCAPE INITIATED</h1>
-            <p style="font-size: 24px; margin-top: 40px;">HE HAS FOUND YOU</p>
-          `;
-          setTimeout(() => {
-            window.location.reload();
-          }, 3000);
-        } else {
-          window.location.reload();
-        }
+        showBootMenu();
       }, 1500);
     }
-    
     // Update progress bar
     progressBar.style.width = progress + '%';
-    
     // Randomly update status message
     if (Math.random() < 0.2) {
       const messageIndex = Math.min(
@@ -436,8 +420,6 @@ function showRebootScreen() {
         statusMessages.length - 1
       );
       statusText.textContent = statusMessages[messageIndex];
-      
-      // Make some messages red and scary
       if (messageIndex > 3) {
         statusText.style.color = '#FF0000';
       } else {
@@ -445,6 +427,137 @@ function showRebootScreen() {
       }
     }
   }, 200);
+}
+
+// Windows 98-style boot menu overlay
+function showBootMenu() {
+  document.querySelectorAll('.bsod').forEach(el => el.remove());
+
+  const bootMenu = document.createElement('div');
+  bootMenu.style.position = 'fixed';
+  bootMenu.style.top = '0';
+  bootMenu.style.left = '0';
+  bootMenu.style.width = '100vw';
+  bootMenu.style.height = '100vh';
+  bootMenu.style.background = '#00007b';
+  bootMenu.style.display = 'flex';
+  bootMenu.style.flexDirection = 'column';
+  bootMenu.style.justifyContent = 'center';
+  bootMenu.style.alignItems = 'center';
+  bootMenu.style.zIndex = '99999';
+
+  const box = document.createElement('div');
+  box.style.background = '#c0c0c0';
+  box.style.border = '2px solid #fff';
+  box.style.boxShadow = '4px 4px 0 #0004';
+  box.style.padding = '32px 48px';
+  box.style.minWidth = '400px';
+  box.style.textAlign = 'left';
+  box.style.fontFamily = "'MS Sans Serif', Arial, sans-serif";
+  box.style.fontSize = '18px';
+
+  const logo = document.createElement('div');
+  logo.style.fontWeight = 'bold';
+  logo.style.fontSize = '28px';
+  logo.style.color = '#000080';
+  logo.style.marginBottom = '18px';
+  logo.innerText = 'Microsoft Windows 98 Startup Menu';
+
+  // Options and their actions
+  const options = [
+    { label: 'Normal', action: () => window.location.reload() },
+    { label: 'Logged ("Safe") Mode', action: showSafeMode },
+    { label: 'Command prompt only', action: showCommandPrompt },
+    { label: 'Step-by-step confirmation', action: showStepByStep },
+    { label: 'Previous version of MS-DOS', action: showDOS },
+    { label: 'Project 98 Recovery Console', action: showRecoveryConsole },
+    { label: 'Dreamscape Mode', action: showDreamscape }
+  ];
+  let selected = 0;
+
+  function renderOptions() {
+    return options.map((opt, i) =>
+      `<div style="${i === selected
+        ? 'background: #000080; color: #fff; padding: 4px 12px; margin-bottom: 6px;'
+        : 'color: #000; padding: 4px 12px; margin-bottom: 6px;'}">${i + 1}. ${opt.label}</div>`
+    ).join('');
+  }
+
+  const instructions = `<div style="margin: 18px 0 8px 0; color: #000;">Use the ↑ and ↓ keys to move the highlight to your choice.<br>Press Enter to select.</div>`;
+
+  function updateMenu() {
+    box.innerHTML = `${logo.outerHTML}${renderOptions()}${instructions}`;
+  }
+
+  updateMenu();
+  bootMenu.appendChild(box);
+  document.body.appendChild(bootMenu);
+
+  function handleBootMenuKey(e) {
+    if (e.key === 'ArrowUp') {
+      selected = (selected - 1 + options.length) % options.length;
+      updateMenu();
+    } else if (e.key === 'ArrowDown') {
+      selected = (selected + 1) % options.length;
+      updateMenu();
+    } else if (e.key === 'Enter') {
+      document.removeEventListener('keydown', handleBootMenuKey);
+      bootMenu.remove();
+      options[selected].action();
+    }
+  }
+  document.addEventListener('keydown', handleBootMenuKey);
+
+  // --- Option actions ---
+  function showSafeMode() {
+    showFakeScreen('Windows 98 - Safe Mode', 'Safe Mode', 'You are now in Safe Mode. Only essential system programs and services are started. <br><br><span style="color:#800">(Nothing works here...)</span>');
+  }
+  function showCommandPrompt() {
+    showFakeScreen('Microsoft(R) Windows 98', 'C:\\>', 'C:\\>_');
+  }
+  function showStepByStep() {
+    showFakeScreen('Step-by-step Confirmation', 'Step 1: Loading HIMEM.SYS...<br>Step 2: Loading EMM386.EXE...<br>Step 3: Loading WIN.COM...<br><br>Step 4: <span style="color:#800">ERROR: DREAMSCAPE DETECTED</span>');
+  }
+  function showDOS() {
+    showFakeScreen('MS-DOS Mode', 'Microsoft(R) Windows 98<br>(C)Copyright Microsoft Corp 1981-1998.<br><br>A:\\>', 'A:\\>_');
+  }
+  function showRecoveryConsole() {
+    showFakeScreen('Project 98 Recovery Console', 'Recovery Console', 'Recovery options are unavailable.<br><span style="color:#800">Scott is still trapped inside.</span>');
+  }
+  function showDreamscape() {
+    showFakeScreen('Dreamscape Mode', 'Dreamscape', '<span style="color:#800">You should not have come here.</span><br><br>He is watching you.');
+  }
+  function showFakeScreen(title, subtitle, content) {
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100vw';
+    overlay.style.height = '100vh';
+    overlay.style.background = '#000';
+    overlay.style.color = '#0f0';
+    overlay.style.display = 'flex';
+    overlay.style.flexDirection = 'column';
+    overlay.style.justifyContent = 'center';
+    overlay.style.alignItems = 'center';
+    overlay.style.fontFamily = 'monospace';
+    overlay.style.fontSize = '22px';
+    overlay.style.zIndex = '100000';
+    overlay.innerHTML = `<div style=\"background:#111;padding:40px 60px;border:2px solid #0f0;box-shadow:0 0 40px #0f08;\">
+      <div style=\"font-size:28px;font-weight:bold;margin-bottom:18px;\">${title}</div>
+      <div style=\"font-size:20px;margin-bottom:18px;\">${subtitle}</div>
+      <div style=\"font-size:16px;\">${content}</div>
+      <div style=\"margin-top:30px;font-size:14px;color:#0f0;\">Press any key to return to the boot menu.</div>
+    </div>`;
+    document.body.appendChild(overlay);
+    function removeOverlay() {
+      overlay.remove();
+      showBootMenu();
+      document.removeEventListener('keydown', removeOverlay);
+    }
+    document.addEventListener('keydown', removeOverlay);
+  }
+}
 }
   </script>
 </body>
