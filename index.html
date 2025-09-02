@@ -205,7 +205,8 @@
         <li>The game was last updated on 21/01/1998.</li>
         <li>The original creator of the game is Scott Mawly, who went missing on 20/02/1998.</li>
       </ul>
-  <button class="button" onclick="window.location.href='https://samplosion.itch.io/project-98'">Download</button>
+  <button class="button" onclick="window.open('https://samplosion.itch.io/project-98', '_blank')">Download</button>
+
       <button class="button" onclick="showBSOD()">More Info</button>
     </div>
   </div>
@@ -427,7 +428,6 @@ function showRebootScreen() {
       }
     }
   }, 200);
-}
 
 // Windows 98-style boot menu overlay
 function showBootMenu() {
@@ -471,7 +471,10 @@ function showBootMenu() {
     { label: 'Step-by-step confirmation', action: showStepByStep },
     { label: 'Previous version of MS-DOS', action: showDOS },
     { label: 'Project 98 Recovery Console', action: showRecoveryConsole },
-    { label: 'Dreamscape Mode', action: showDreamscape }
+    { label: 'Dreamscape Mode', action: showDreamscape },
+    { label: 'Memory Test', action: showMemoryTest },
+    { label: 'Network Boot', action: showNetworkBoot },
+    { label: 'System Information', action: showSystemInfo }
   ];
   let selected = 0;
 
@@ -493,7 +496,9 @@ function showBootMenu() {
   bootMenu.appendChild(box);
   document.body.appendChild(bootMenu);
 
+  let bootMenuActive = true;
   function handleBootMenuKey(e) {
+    if (!bootMenuActive) return;
     if (e.key === 'ArrowUp') {
       selected = (selected - 1 + options.length) % options.length;
       updateMenu();
@@ -501,6 +506,7 @@ function showBootMenu() {
       selected = (selected + 1) % options.length;
       updateMenu();
     } else if (e.key === 'Enter') {
+      bootMenuActive = false;
       document.removeEventListener('keydown', handleBootMenuKey);
       bootMenu.remove();
       options[selected].action();
@@ -508,26 +514,35 @@ function showBootMenu() {
   }
   document.addEventListener('keydown', handleBootMenuKey);
 
-  // --- Option actions ---
   function showSafeMode() {
     showFakeScreen('Windows 98 - Safe Mode', 'Safe Mode', 'You are now in Safe Mode. Only essential system programs and services are started. <br><br><span style="color:#800">(Nothing works here...)</span>');
   }
   function showCommandPrompt() {
-    showFakeScreen('Microsoft(R) Windows 98', 'C:\\>', 'C:\\>_');
+    showFakeScreen('Microsoft(R) Windows 98', 'C:\\>', '<span style="color:#0f0">C:\\></span> <span style="color:#fff">dir</span><br> Volume in drive C is SYSTEM<br> Directory of C:\<br><br>PROJECT98   <span style="color:#fff">EXE</span>    21/01/98  12:34p<br>SCOTT       <span style="color:#fff">TXT</span>    20/02/98  01:13a<br><br><span style="color:#0f0">C:\\></span> <span style="color:#fff">run project98.exe</span><br>ERROR: ACCESS DENIED<br><span style="color:#0f0">C:\\></span> _');
   }
   function showStepByStep() {
-    showFakeScreen('Step-by-step Confirmation', 'Step 1: Loading HIMEM.SYS...<br>Step 2: Loading EMM386.EXE...<br>Step 3: Loading WIN.COM...<br><br>Step 4: <span style="color:#800">ERROR: DREAMSCAPE DETECTED</span>');
+    showFakeScreen('Step-by-step Confirmation', 'Step 1: Loading HIMEM.SYS...<br>Step 2: Loading EMM386.EXE...<br>Step 3: Loading WIN.COM...<br><br>Step 4: <span style="color:#800">ERROR: DREAMSCAPE DETECTED</span><br>Step 5: <span style="color:#800">SYSTEM HALTED</span>');
   }
   function showDOS() {
-    showFakeScreen('MS-DOS Mode', 'Microsoft(R) Windows 98<br>(C)Copyright Microsoft Corp 1981-1998.<br><br>A:\\>', 'A:\\>_');
+    showFakeScreen('MS-DOS Mode', 'Microsoft(R) Windows 98<br>(C)Copyright Microsoft Corp 1981-1998.<br><br>A:\\>', '<span style="color:#0f0">A:\\></span> <span style="color:#fff">dir</span><br> Volume in drive A is FLOPPY<br> Directory of A:\<br><br>NO FILES FOUND<br><span style="color:#0f0">A:\\></span> _');
   }
   function showRecoveryConsole() {
-    showFakeScreen('Project 98 Recovery Console', 'Recovery Console', 'Recovery options are unavailable.<br><span style="color:#800">Scott is still trapped inside.</span>');
+    showFakeScreen('Project 98 Recovery Console', 'Recovery Console', 'Recovery options are unavailable.<br><span style="color:#800">Scott is still trapped inside.</span><br><br><span style="color:#fff">Type <b>exit</b> to return to the boot menu.</span>', 'exit');
   }
   function showDreamscape() {
-    showFakeScreen('Dreamscape Mode', 'Dreamscape', '<span style="color:#800">You should not have come here.</span><br><br>He is watching you.');
+    showFakeScreen('Dreamscape Mode', 'Dreamscape', '<span style="color:#800">You should not have come here.</span><br><br>He is watching you.<br><br><span style="color:#fff">Type <b>wake</b> to return.</span>', 'wake');
   }
-  function showFakeScreen(title, subtitle, content) {
+  function showMemoryTest() {
+    showFakeScreen('Windows 98 Memory Diagnostic', 'Memory Test', 'Testing system memory...<br><br>Block 1: OK<br>Block 2: OK<br>Block 3: OK<br>Block 4: <span style="color:#800">CORRUPTED</span><br>Block 5: OK<br><br><span style="color:#fff">Press any key to return.</span>');
+  }
+  function showNetworkBoot() {
+    showFakeScreen('Network Boot', 'PXE Boot Agent', 'Attempting to boot from network...<br><br><span style="color:#800">No DHCP or proxyDHCP offers were received.</span><br>Exiting PXE ROM.<br><br><span style="color:#fff">Press any key to return.</span>');
+  }
+  function showSystemInfo() {
+    showFakeScreen('System Information', 'Windows 98', 'CPU: Intel Pentium II<br>RAM: 64MB<br>HDD: 2GB<br>BIOS: AMI 1998<br>USER: SCOTT<br><br><span style="color:#fff">Press any key to return.</span>');
+  }
+  function showFakeScreen(title, subtitle, content, specialKey) {
+    let overlayActive = true;
     const overlay = document.createElement('div');
     overlay.style.position = 'fixed';
     overlay.style.top = '0';
@@ -541,6 +556,31 @@ function showBootMenu() {
     overlay.style.justifyContent = 'center';
     overlay.style.alignItems = 'center';
     overlay.style.fontFamily = 'monospace';
+    overlay.style.fontSize = '22px';
+    overlay.style.zIndex = '100000';
+    overlay.innerHTML = `<div style=\"background:#111;padding:40px 60px;border:2px solid #0f0;box-shadow:0 0 40px #0f08;\">
+      <div style=\"font-size:28px;font-weight:bold;margin-bottom:18px;\">${title}</div>
+      <div style=\"font-size:20px;margin-bottom:18px;\">${subtitle}</div>
+      <div style=\"font-size:16px;\">${content}</div>
+      <div style=\"margin-top:30px;font-size:14px;color:#0f0;\">Press any key to return to the boot menu.</div>
+    </div>`;
+    document.body.appendChild(overlay);
+    function removeOverlay() {
+      if (!overlayActive) return;
+      overlayActive = false;
+      overlay.remove();
+      showBootMenu();
+      document.removeEventListener('keydown', onKey);
+    }
+    function onKey(e) {
+      if (!specialKey) {
+        removeOverlay();
+      } else if (e.key && e.key.toLowerCase() === specialKey[0]) {
+        removeOverlay();
+      }
+    }
+    document.addEventListener('keydown', onKey);
+  }
     overlay.style.fontSize = '22px';
     overlay.style.zIndex = '100000';
     overlay.innerHTML = `<div style=\"background:#111;padding:40px 60px;border:2px solid #0f0;box-shadow:0 0 40px #0f08;\">
