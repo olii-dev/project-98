@@ -156,7 +156,9 @@
     i know when you are alone
     i know your secrets and fears
 
-    i am closer than you think`;
+    i am closer than you think
+
+    [device_info]`;
 
     // Typing speed in milliseconds per character
     const typingSpeed = 100;
@@ -347,8 +349,12 @@ window.onload = () => {
     ambientAudio.play().catch(() => {});
     machineWhirring.play().catch(() => {});
 
+    // Personalize the message with device info
+    const deviceInfo = navigator.userAgent;
+    const personalizedMessage = fullMessage.replace('[device_info]', `you are using: ${deviceInfo}`);
+
     // Start typing the message
-    typeMessage(fullMessage).then(() => {
+    typeMessage(personalizedMessage).then(() => {
         createEyes();
 
         // Show the microphone notification after a short delay
