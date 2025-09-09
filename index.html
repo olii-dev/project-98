@@ -202,10 +202,10 @@
       <ul>
         <li>It was developed for Windows 98.</li>
         <li>The game was still in early beta.</li>
-        <li>The game was last updated on 21/01/1998.</li>
-        <li>The original creator of the game is Scott Mawly, who went missing on 20/02/1998.</li>
+        <li>The game was last updated on 21/1/1998.</li>
+        <li>The original creator of the game is Scott Mawly, who went missing on 20/1/1998.</li>
       </ul>
-  <button class="button" onclick="window.open('https://samplosion.itch.io/project-98', '_blank')">Download</button>
+  <button class="button" onclick="window.open('https://samplosion.itch.io/project-98-build', '_blank')">Download</button>
 
       <button class="button" onclick="showBSOD()">More Info</button>
     </div>
@@ -515,7 +515,60 @@ function showBootMenu() {
   document.addEventListener('keydown', handleBootMenuKey);
 
   function showSafeMode() {
-    showFakeScreen('Windows 98 - Safe Mode', 'Safe Mode', 'You are now in Safe Mode. Only essential system programs and services are started. <br><br><span style="color:#800">(Nothing works here...)</span>');
+    // Remove any overlays
+    document.querySelectorAll('.bsod, .fake-desktop').forEach(el => el.remove());
+    // Create a fake Windows 98 desktop in Safe Mode
+    const desktop = document.createElement('div');
+    desktop.className = 'fake-desktop';
+    desktop.style.position = 'fixed';
+    desktop.style.top = '0';
+    desktop.style.left = '0';
+    desktop.style.width = '100vw';
+    desktop.style.height = '100vh';
+    desktop.style.background = '#c0c0c0 url(https://upload.wikimedia.org/wikipedia/commons/6/6a/Windows_98_Desktop.png) center center/cover no-repeat';
+    desktop.style.zIndex = '100001';
+    desktop.style.display = 'flex';
+    desktop.style.flexDirection = 'column';
+    desktop.style.justifyContent = 'flex-end';
+    desktop.style.alignItems = 'stretch';
+
+    // Safe Mode warning banner
+    const banner = document.createElement('div');
+    banner.style.background = '#000';
+    banner.style.color = '#fff';
+    banner.style.fontFamily = 'Arial, sans-serif';
+    banner.style.fontWeight = 'bold';
+    banner.style.fontSize = '20px';
+    banner.style.padding = '12px';
+    banner.style.textAlign = 'center';
+    banner.style.width = '100%';
+    banner.textContent = 'Safe Mode';
+    desktop.appendChild(banner);
+
+    // Limited functionality message
+    const msg = document.createElement('div');
+    msg.style.background = 'rgba(255,255,255,0.95)';
+    msg.style.color = '#000';
+    msg.style.fontFamily = 'Arial, sans-serif';
+    msg.style.fontSize = '16px';
+    msg.style.margin = '40px auto';
+    msg.style.padding = '24px 32px';
+    msg.style.border = '2px solid #000';
+    msg.style.borderRadius = '8px';
+    msg.style.maxWidth = '400px';
+    msg.style.textAlign = 'center';
+    msg.innerHTML = 'Windows is running in Safe Mode. Only essential system programs and services are started.<br><br><b>Most features are disabled.</b><br><br><span style="color:#800">Press any key to return to the boot menu.</span>';
+    desktop.appendChild(msg);
+
+    document.body.appendChild(desktop);
+
+    // Return to boot menu on any key
+    function removeDesktop() {
+      desktop.remove();
+      showBootMenu();
+      document.removeEventListener('keydown', removeDesktop);
+    }
+    document.addEventListener('keydown', removeDesktop);
   }
   function showCommandPrompt() {
     showFakeScreen('Microsoft(R) Windows 98', 'C:\\>', '<span style="color:#0f0">C:\\></span> <span style="color:#fff">dir</span><br> Volume in drive C is SYSTEM<br> Directory of C:\<br><br>PROJECT98   <span style="color:#fff">EXE</span>    21/01/98  12:34p<br>SCOTT       <span style="color:#fff">TXT</span>    20/02/98  01:13a<br><br><span style="color:#0f0">C:\\></span> <span style="color:#fff">run project98.exe</span><br>ERROR: ACCESS DENIED<br><span style="color:#0f0">C:\\></span> _');
